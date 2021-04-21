@@ -50,6 +50,24 @@ impl Drop for Droppable{
     }
 }
 
+fn try_mutex(){
+    //スレッド, mutex
+    let mut handles = Vec::new();
+    let data = Arc::new(Mutex::new(vec![1; 10]));
+
+    for x in 0..10 {
+        let data_ref = data.clone();
+        handles.push(thread::spawn(move || {
+            let mut data = data_ref.lock().unwrap();
+            data[x] += x;
+        }));
+    }
+    for handle in handles{
+        let _ = handle.join();
+    }
+    dbg!(data);
+}
+
 fn main() {
     println!("Hello, world!");
     let v = vec![1,2,3,3];
@@ -99,22 +117,10 @@ fn main() {
     }
     println!("The droppable should be released");
 
-    //スレッド, mutex
-    let mut handles = Vec::new();
-    let data = Arc::new(Mutex::new(vec![1; 10]));
+    //Mutex
+    try_mutex();
 
-    for x in 0..10 {
-        let data_ref = data.clone();
-        handles.push(thread::spawn(move || {
-            let mut data = data_ref.lock().unwrap();
-            data[x] += x;
-        }));
-    }
-    for handle in handles{
-        let _ = handle.join();
-    }
-    dbg!(data);
-
+    // Call the other module a
     println!("{}", a::add(1,1))
 }
 
